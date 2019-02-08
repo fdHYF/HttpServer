@@ -87,7 +87,6 @@
     <ClInclude Include="lib\Condition.h" />
     <ClInclude Include="lib\Mutex.h" />
     <ClInclude Include="lib\Thread.h" />
-    <ClInclude Include="Log.h" />
     <ClInclude Include="logging\Log.h" />
     <ClInclude Include="logging\LogFile.h" />
     <ClInclude Include="logging\LogStream.h" />
