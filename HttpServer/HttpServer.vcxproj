@@ -76,10 +76,10 @@
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
     <ClCompile Include="lib\Thread.cpp" />
-    <ClCompile Include="log\Log.cpp" />
-    <ClCompile Include="log\LogFile.cpp" />
-    <ClCompile Include="log\LogStream.cpp" />
-    <ClCompile Include="log\LogWrite.cpp" />
+    <ClCompile Include="logging\Log.cpp" />
+    <ClCompile Include="logging\LogFile.cpp" />
+    <ClCompile Include="logging\LogStream.cpp" />
+    <ClCompile Include="logging\LogWrite.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
   </ItemGroup>
@@ -88,10 +88,10 @@
     <ClInclude Include="lib\Mutex.h" />
     <ClInclude Include="lib\Thread.h" />
     <ClInclude Include="Log.h" />
-    <ClInclude Include="log\Log.h" />
-    <ClInclude Include="log\LogFile.h" />
-    <ClInclude Include="log\LogStream.h" />
-    <ClInclude Include="log\LogWrite.h" />
+    <ClInclude Include="logging\Log.h" />
+    <ClInclude Include="logging\LogFile.h" />
+    <ClInclude Include="logging\LogStream.h" />
+    <ClInclude Include="logging\LogWrite.h" />
     <ClInclude Include="ThreadPool.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
