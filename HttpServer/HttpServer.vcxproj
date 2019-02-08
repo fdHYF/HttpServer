@@ -87,13 +87,18 @@
     <ClInclude Include="lib\Condition.h" />
     <ClInclude Include="lib\Mutex.h" />
     <ClInclude Include="lib\Thread.h" />
+    <ClInclude Include="Log.h" />
     <ClInclude Include="log\Log.h" />
     <ClInclude Include="log\LogFile.h" />
     <ClInclude Include="log\LogStream.h" />
     <ClInclude Include="log\LogWrite.h" />
     <ClInclude Include="ThreadPool.h" />
   </ItemGroup>
-  <ItemDefinitionGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Link>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>
