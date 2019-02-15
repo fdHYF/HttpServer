@@ -77,7 +77,6 @@
   <ItemGroup>
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="Epoll.cpp" />
-    <ClCompile Include="EventLoop.cpp" />
     <ClCompile Include="lib\Thread.cpp" />
     <ClCompile Include="logging\Log.cpp" />
     <ClCompile Include="logging\LogFile.cpp" />
@@ -90,7 +89,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Epoll.h" />
-    <ClInclude Include="EventLoop.h" />
     <ClInclude Include="lib\Condition.h" />
     <ClInclude Include="lib\Mutex.h" />
     <ClInclude Include="lib\Thread.h" />
@@ -99,6 +97,7 @@
     <ClInclude Include="logging\LogStream.h" />
     <ClInclude Include="logging\LogWrite.h" />
     <ClInclude Include="Request.h" />
+    <ClInclude Include="Server.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="Timer.h" />
   </ItemGroup>

@@ -1,5 +1,4 @@
 #pragma once
-#include <stdint.h>
 #include <functional>
 #include <sys/epoll.h>
 #include <memory>
@@ -10,7 +9,7 @@ class EventLoop;
 class Channel {
 public:
 	using EventCallBack = std::function<void()>;
-	Channel(EventLoop* loop, int fd);
+	Channel(int fd);
 
 	void handleEvent();
 	void setReadCallBack(const EventCallBack& cb) {
@@ -27,7 +26,7 @@ public:
 
 	int fd() const { return fd_; }
 	std::shared_ptr<HttpData> getHolder() { return holder_.lock(); }
-	uint32_t& events() { return events_; }
+	//uint32_t& events() { return events_; }
 	void set_events(uint32_t events) { events_ = events }
 
 private:
