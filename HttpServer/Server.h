@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <signal.h>
+#include <cstring>
 
 int set_socket_nonblocking(int sockfd) {
 	int flag = fcntl(sockfd, F_GETFL, 0);
@@ -19,14 +20,14 @@ int set_socket_nonblocking(int sockfd) {
 }
 
 int socket_bind_listen(int port) {
-	if (sockfd < 0 || sockfd > 65535)
+	if (port < 0 || port > 65535)
 		return -1;
 
 	int listen_fd = 0;
-	if (listen_fd = socket(AF_INET, SOCK_STREAM, 0) == -1)
+	if ((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		return -1;
 	int optval = 1;
-	if (setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, (const void*)*optval, sizeof(int)) == -10)
+	if (setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, (const void*)&optval, sizeof(int)) == -10)
 		return -1;
 	//设置服务器IP和port，与listenfd进行绑定
 	struct sockaddr_in server_addr;
@@ -39,7 +40,7 @@ int socket_bind_listen(int port) {
 	if (listen(listen_fd, 2048) == -1)
 		return -1;
 	if (listen_fd == -1) {
-		close(fd);
+		close(listen_fd);
 		return -1;
 	}
 	return listen_fd;

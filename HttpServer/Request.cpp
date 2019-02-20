@@ -4,10 +4,11 @@
 #include <functional>
 #include <pthread.h>
 #include <errno.h>
-#include <epoll.h>
+#include <sys/epoll.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
-#include "base/Logging.h"
+#include "logging/Log.h"
+
 
 //静态成员初始化
 pthread_once_t MimeType::once_control = PTHREAD_ONCE_INIT;
@@ -45,7 +46,7 @@ void MimeType::init() {
 }
 
 
-std::string MimeType::getMime(std::string str) {
+std::string MimeType::getMime(const std::string& str) {
 	pthread_once(&once_control, init);
 	if (mime.find(str) == mime.end())
 		return mime["default"];
@@ -53,10 +54,9 @@ std::string MimeType::getMime(std::string str) {
 		return mime[str];
 }
 
-HttpData::HttpData(EventLoop* loop, int connfd) :
-	loop_(loop),
+HttpData::HttpData(int connfd) :
 	fd_(connfd),
-	channel_(loop_, connfd),
+	channel_(connfd),
 	method_(GET),
 	version_(HTTP_11),
 	keepAlive_(false),
@@ -130,14 +130,14 @@ HTTP_CODE HttpData::parse_request_line(std::string& request_line) {
 
 //分析头部字段
 HTTP_CODE HttpData::parse_headers(std::string& header) {
+	std::string key;
+	std::string value;
 	if (header[0] == '\0') {
 		if (method_ == HEAD)
 			return GET_REQUEST;
 		else
 			return NO_REQUEST;
 	}
-	std::string key;
-	std::string value;
 	else {
 		size_t pos = header.find(":");
 		key = header.substr(0, pos);
@@ -145,11 +145,12 @@ HTTP_CODE HttpData::parse_headers(std::string& header) {
 		value = header.substr(pos, header.size());
 		headers_[key] = value;
 	}
+	return GET_REQUEST;
 }
 
 //因为此处只支持GET方法，GET方法对应的实体体为空，故没有实体体的解析
 HTTP_CODE HttpData::parse_content(std::string& content) {
-
+	return GET_REQUEST;
 }
 
 //返回读取字节总数
@@ -179,7 +180,7 @@ void HttpData::handleRead() {
 	LINE_STATUS line_state = LINE_OK;
 	CHECK_STATE check_state = CHECK_STATE_REQUESTLINE;
 	HTTP_CODE http_code = GET_REQUEST;
-	int readsum = readFromFd();
+	int readsum = (int)readFromFd();
 	if (readsum < 0) {
 		handleError(fd_, 400, "Bad Request");
 	}
@@ -221,11 +222,11 @@ void HttpData::handleRead() {
 ssize_t HttpData::writeToFd() {
 	ssize_t nwrite = 0;
 	ssize_t writesum = 0;
-	char* tmp = WriteBuffer.c_str();
+	const char* tmp = WriteBuffer.c_str();
 	WriteBuffer.clear();
 	while (true) {
 		size_t len = strlen(tmp);
-		if ((nwrite = write(fd_, tmp, len) < 0) {
+		if ((nwrite = write(fd_, tmp, len) < 0)) {
 			if (errno == EINTR)
 				continue;
 			else if (errno == EAGAIN)
@@ -242,11 +243,11 @@ ssize_t HttpData::writeToFd() {
 }
 
 void HttpData::handleWrite() {
-	int& event = channel_->events();
+	uint32_t& event = channel_->events();
 	if (writeToFd() < 0) {
 		event = 0;
 	}
-	event |= EPLLOUT;
+	event |= EPOLLOUT;
 }
 
 bool HttpData::do_request() {
@@ -277,7 +278,7 @@ bool HttpData::do_request() {
 	}
 
 	header += "Content-Type: " + file_type + "\r\n";
-	header += "Content-Length: " + to_string(buf.st_size) + "\r\n";
+	header += "Content-Length: " + std::to_string(buf.st_size) + "\r\n";
 	header += "Server: WangTian/1.0 (Ubuntu)\r\n";
 	header += "\r\n";
 	WriteBuffer += header;
@@ -308,19 +309,19 @@ bool HttpData::do_request() {
 }
 
 void HttpData::handleError(int fd, int err_num, std::string msg) {
-	char buffer[WRITE_BUFFER_SIZE];
+	//char buffer[WRITE_BUFFER_SIZE];
 	//响应头缓冲和数据缓冲
 	std::string header, body;
 	body += "<html><title>哎呀~出错了</title>";
 	body += "<body bgcolor=\"ffffff\">";
-	body += to_string(err_num) + " " + msg;
+	body += std::to_string(err_num) + " " + msg;
 	body += "<hr><em> WangTian Web Server</em>\n</body></html>";
 
-	header += "HTTP/1.1 " + to_string(err_num) + " " + msg + "\r\n";
+	header += "HTTP/1.1 " + std::to_string(err_num) + " " + msg + "\r\n";
 	header += "Content-Type: text\html\r\n";
 	header += "Connection: close\r\n";
 	header += "Server: WangTian\r\n";
-	header += "Content-Length: " + to_string(body.size()) + "\r\n";
+	header += "Content-Length: " + std::to_string(body.size()) + "\r\n";
 	header += "\r\n";
 
 	WriteBuffer += header;

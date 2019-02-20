@@ -8,16 +8,17 @@ class HttpData;
 
 class TimerNode {
 public:
-	TimerNode(const std::shared_ptr<HttpData> client_data, 
+	TimerNode(const std::shared_ptr<HttpData>& client_data, 
 		const size_t& expiredtime);
-	~TimeNode() {}
-	TimeNode(const TimeNode& rhs);
-	TimeNode& operator=(const TimeNode& rhs);
+	~TimerNode() {}
+	TimerNode(const TimerNode& rhs);
+	TimerNode& operator=(const TimerNode& rhs);
 
 	void update(size_t updatetime);
 	void setDeleted() { deleted_ = true; }
 	bool isValid();
 	bool isDeleted() { return deleted_ == true; }
+	size_t get_expired() const { return expiredtime_; }
 private:
 	bool deleted_;
 	std::shared_ptr<HttpData> client_data_;
@@ -28,21 +29,21 @@ private:
 struct TimeNodeComp {
 	bool operator() (const std::shared_ptr<TimerNode>& a,
 		const std::shared_ptr<TimerNode>& b) {
-		return a->expiredtime_ > b->expiredtime_;
+		return a->get_expired() > b->get_expired();
 	}
 };
 
 class Timer {
 public:
-	using sp_node = std::shared_ptr<TimeNode>;
+	using sp_node = std::shared_ptr<TimerNode>;
 
 	Timer();
 	~Timer();
-	Timer(const Timer& rhs) = delete;
-	Timer& operator=(const Timer& rhs) = delete;
+	//Timer(const Timer& rhs) = delete;
+	//Timer& operator=(const Timer& rhs) = delete;
 
 	//添加新的时间节点
-	void add_node(std::shared_ptr<HttpData> client_data, size_t timeout);
+	void add_node(std::shared_ptr<HttpData> client_data, const size_t timeout);
 	//采用惰性删除的方式处理超时节点
 	void handle_expired();
 

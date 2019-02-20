@@ -13,7 +13,7 @@ void Channel::update() {
 
 }
 
-void Channel::handleEvent() {
+void* Channel::handleEvent(void*) {
 	if (events_ & EPOLLERR) {
 		if (errorCallBack_)
 			errorCallBack_();
@@ -26,4 +26,5 @@ void Channel::handleEvent() {
 		if (writeCallBack_)
 			writeCallBack_();
 	}
+	return nullptr;
 }

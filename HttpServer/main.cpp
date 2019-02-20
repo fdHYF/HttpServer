@@ -1,17 +1,21 @@
-#include "EventLoop.h"
 #include "Server.h"
-#include "logging/log.h"
+#include "logging/Log.h"
 #include "Channel.h"
+#include "Timer.h"
+#include "Request.h"
+#include "Epoll.h"
+#include "ThreadPool.h"
 #include <string>
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
 
+extern const int TIME_WAIT;
 int main(int argc, char* argv[]) {
-	if (argc <= 2)
+	if (argc < 2)
 		printf("Usage: %s ip_address port_number\n", basename(argv[0]));
-	const char* ip = argv[1];
-	int port = atoi(argv[2]);
+	//const char* ip = argv[1];
+	int port = atoi(argv[1]);
 	handle_for_sigpipe();
 
 	//初始化套接字，开始监听
@@ -23,10 +27,11 @@ int main(int argc, char* argv[]) {
 	}
 
 	std::shared_ptr<Epoll> epoller;
-	Channel channel(listenfd);
-	epoller->epoll_add(Channel, TIME_WAIT, EPOLLIN | EPOLLET);
-	//创建线程池
-	ThreadPool pool;
+	HttpData client_data(listenfd);
+	std::shared_ptr<Channel> channel = client_data.get_channel();
+	epoller->epoll_add(channel, TIME_WAIT, EPOLLIN | EPOLLET);
+	//创建线程池,采用默认值
+	static ThreadPool pool;
 	std::vector<std::shared_ptr<Channel>> active_channel;
 	while (true) {
 		active_channel.clear();
@@ -35,9 +40,9 @@ int main(int argc, char* argv[]) {
 		active_channel = epoller->handle_event(num, listenfd);
 		for (auto &tmp : active_channel) {
 			RequestTask task;
-			task.func = std::bind(&Channel::handleEvent, this, nullptr);
+			task.func = tmp->handleEvent;
 			task.args = nullptr;
-			poll.append(&task);
+			pool.append(&task);
 		}
 	}
 	return 0;

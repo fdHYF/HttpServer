@@ -22,7 +22,8 @@ public:
 	void add_timer(std::shared_ptr<Channel> channel, size_t timeout);
 	std::vector<std::shared_ptr<Channel>> handle_event(int num, int listenfd);
 
-	void getEpollFd() { return epollfd_; }
+	int getEpollFd() { return epollfd_; }
+	Timer get_timer() { return timer_; }
 private:
 	static const int maxFds_ = 100000;
 	int epollfd_;
