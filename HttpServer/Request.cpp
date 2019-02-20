@@ -56,16 +56,16 @@ std::string MimeType::getMime(const std::string& str) {
 
 HttpData::HttpData(int connfd) :
 	fd_(connfd),
-	channel_(connfd),
+	channel_(new Channel(connfd)),
 	method_(GET),
 	version_(HTTP_11),
 	keepAlive_(false),
 	now_index_(0),
 	read_index_(0)
-{
+{	
 	channel_->setReadCallBack(std::bind(&HttpData::handleRead, this));
 	channel_->setWriteCallBack(std::bind(&HttpData::handleWrite, this));
-	channel_->setErroeCallBack(std::bind(&HttpData::handleError, this));
+	//channel_->setErrorCallBack(std::bind(&HttpData::handleError, this));
 }
 
 //从状态机，用于解析出一行
@@ -170,7 +170,7 @@ ssize_t HttpData::readFromFd() {
 		else if (nread == 0)
 			break;
 		readsum += nread;
-		read_index_ += nread;
+		read_index_ += (int)nread;
 		ReadBuffer += std::string(buffer, buffer + nread);
 	}
 	return readsum;
@@ -318,7 +318,7 @@ void HttpData::handleError(int fd, int err_num, std::string msg) {
 	body += "<hr><em> WangTian Web Server</em>\n</body></html>";
 
 	header += "HTTP/1.1 " + std::to_string(err_num) + " " + msg + "\r\n";
-	header += "Content-Type: text\html\r\n";
+	header += "Content-Type: text/html\r\n";
 	header += "Connection: close\r\n";
 	header += "Server: WangTian\r\n";
 	header += "Content-Length: " + std::to_string(body.size()) + "\r\n";

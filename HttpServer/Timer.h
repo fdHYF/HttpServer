@@ -37,7 +37,7 @@ class Timer {
 public:
 	using sp_node = std::shared_ptr<TimerNode>;
 
-	Timer();
+	Timer() = default;
 	~Timer();
 	//Timer(const Timer& rhs) = delete;
 	//Timer& operator=(const Timer& rhs) = delete;

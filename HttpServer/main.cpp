@@ -11,19 +11,16 @@
 #include <cassert>
 
 extern const int TIME_WAIT;
-int main(int argc, char* argv[]) {
-	if (argc < 2)
-		printf("Usage: %s ip_address port_number\n", basename(argv[0]));
-	//const char* ip = argv[1];
-	int port = atoi(argv[1]);
+int main() {
+	int port = 80;
 	handle_for_sigpipe();
 
 	//初始化套接字，开始监听
 	int listenfd = socket_bind_listen(port);
 	//将监听套接字设置为非阻塞
-	if (set_socket_nonblocking(listenfd) < 0) {
+	if (set_socket_nonblocking(listenfd) != 0) {
 		perror("set socket nonblocking failed");
-		abort();
+		//abort();
 	}
 
 	std::shared_ptr<Epoll> epoller;
@@ -40,10 +37,12 @@ int main(int argc, char* argv[]) {
 		active_channel = epoller->handle_event(num, listenfd);
 		for (auto &tmp : active_channel) {
 			RequestTask task;
-			task.func = tmp->handleEvent;
+			task.func = std::bind(&Channel::handleEvent, tmp, std::placeholders::_1);
 			task.args = nullptr;
 			pool.append(&task);
 		}
 	}
+	
+	printf("hello world!\n");
 	return 0;
 }

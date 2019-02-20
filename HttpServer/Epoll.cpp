@@ -6,7 +6,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-
+class Channel;
 Epoll::Epoll() :
 	epollfd_(epoll_create1(EPOLL_CLOEXEC)),
 	events_(EVENTSUM)
@@ -18,7 +18,7 @@ int Epoll::epoll_add(std::shared_ptr<Channel> channel, size_t timeout, uint32_t 
 	int fd = channel->fd();
 	if (timeout > 0) {
 		add_timer(channel, timeout);
-		datas_[fd] = channel->getHolder();
+		//datas_[fd] = channel->getHolder();
 	}
 	struct epoll_event event;
 	event.data.fd = fd;
@@ -107,9 +107,9 @@ std::vector<std::shared_ptr<Channel>> Epoll::handle_event(int num, int listenfd)
 }
 
 void Epoll::add_timer(std::shared_ptr<Channel> channel, size_t timeout) {
-	std::shared_ptr<HttpData> tmp = channel->getHolder();
-	if (tmp)
-		timer_.add_node(tmp, timeout);
+	//std::shared_ptr<HttpData> tmp = channel->getHolder();
+	//if (tmp)
+		//timer_.add_node(tmp, timeout);
 	//else
 		//LOG << "the add node is error";
 }

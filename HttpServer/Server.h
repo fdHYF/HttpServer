@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <signal.h>
+#include <unistd.h>
 #include <cstring>
 
 int set_socket_nonblocking(int sockfd) {

@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include <map>
 #include <memory>
 #include <string>
@@ -8,7 +7,7 @@
 #include <cstdio>
 #include "Timer.h"
 
-class Channel;
+#include "Channel.h"
 const int FILENAME_LIN = 200;		//最大文件名长度
 const int READ_BUFFER_SIZE = 1024;
 const int WRITE_BUFFER_SIZE = 2048;

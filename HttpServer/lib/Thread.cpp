@@ -1,5 +1,4 @@
 #include "Thread.h"
-#include "noncopyable.h"
 #include <sys/prctl.h>
 #include <cassert>
 #include <iostream>
