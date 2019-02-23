@@ -24,7 +24,7 @@ public:
 		errorCallBack_ = cb;
 	}
 
-	int fd() const { return fd_; }
+	int fd() { return fd_; }
 	//std::shared_ptr<HttpData> getHolder() { return holder_.lock(); }
 	uint32_t& events() { return events_; }
 	void set_events(uint32_t events) { events_ = events; }

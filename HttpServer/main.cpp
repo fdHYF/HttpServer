@@ -12,7 +12,7 @@
 
 extern const int TIME_WAIT;
 int main() {
-	int port = 80;
+	int port = 8080;
 	handle_for_sigpipe();
 
 	//初始化套接字，开始监听
@@ -20,12 +20,12 @@ int main() {
 	//将监听套接字设置为非阻塞
 	if (set_socket_nonblocking(listenfd) != 0) {
 		perror("set socket nonblocking failed");
-		//abort();
 	}
 
-	std::shared_ptr<Epoll> epoller;
+	std::shared_ptr<Epoll> epoller(new Epoll);
 	HttpData client_data(listenfd);
 	std::shared_ptr<Channel> channel = client_data.get_channel();
+	assert(channel);
 	epoller->epoll_add(channel, TIME_WAIT, EPOLLIN | EPOLLET);
 	//创建线程池,采用默认值
 	static ThreadPool pool;
@@ -42,7 +42,6 @@ int main() {
 			pool.append(&task);
 		}
 	}
-	
 	printf("hello world!\n");
 	return 0;
 }
