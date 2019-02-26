@@ -1,5 +1,4 @@
 #pragma once
-#include "EventLoop.h"
 #include "Channel.h"
 #include <memory>
 #include <sys/socket.h>

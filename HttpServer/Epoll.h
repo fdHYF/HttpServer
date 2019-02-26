@@ -4,7 +4,6 @@
 #include "Request.h"
 #include "Timer.h"
 #include <vector>
-#include <map>
 #include <memory>
 #include <stdint.h>
 
@@ -32,8 +31,5 @@ private:
 	int epollfd_;
 	std::vector<struct epoll_event> events_;
 	Timer timer_;
-	//std::vector<std::shared_ptr<HttpData>> datas_;
-	//std::vector<sp_channel> channels_;
-    //std::map<int, sp_channel> channels_;
-	//std::shared_ptr<Channel> channels_[maxFds_];
+	std::vector<sp_channel> channels_{ maxFds_ };
 };

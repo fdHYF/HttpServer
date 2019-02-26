@@ -21,7 +21,7 @@ int main() {
 		perror("set socket nonblocking failed");
 	}
 
-	std::shared_ptr<Epoll> epoller(new Epoll);
+	std::shared_ptr<Epoll> epoller = std::make_shared<Epoll>();
 	HttpData client_data(listenfd);
 	std::shared_ptr<Channel> channel = client_data.get_channel();
 	assert(channel);
@@ -32,7 +32,7 @@ int main() {
 	while (true) {
 		active_channel.clear();
 		int num = epoller->epoll();
-		assert(num > 0);
+		//assert(num > 0);
 		active_channel = epoller->handle_event(num, listenfd);
 		for (auto &tmp : active_channel) {
 			RequestTask task;
