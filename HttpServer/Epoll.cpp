@@ -12,10 +12,9 @@ Epoll::Epoll() :
 	events_(MAXEVENTS)
 {
 	assert(epollfd_ > 0);
-	printf("epollfd_ creat correct\n");
 }
 
-int Epoll::epoll_add(sp_channel channel, size_t timeout, int events) {
+int Epoll::epoll_add(sp_channel channel, size_t timeout, uint32_t events) {
 	int fd = channel->fd();
 	if (timeout > 0)
 		add_timer(channel, timeout);
@@ -23,24 +22,28 @@ int Epoll::epoll_add(sp_channel channel, size_t timeout, int events) {
 	event.data.ptr = static_cast<void*>(channel.get());
 	event.events = events;
 	int ret = epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &event);
-	if (ret == -1)
+	if (ret == -1) {
+		LOG << "epoll_add error";
 		return -1;
+	}
 	return 0;
 }
 
-int Epoll::epoll_mod(sp_channel channel, size_t timeout, int events) {
+int Epoll::epoll_mod(sp_channel channel, size_t timeout, uint32_t events) {
 	if (timeout > 0)
 		add_timer(channel, timeout);
 	int fd = channel->fd();
 	struct epoll_event event;
 	event.data.ptr = static_cast<void*>(channel.get());
 	event.events = events;
-	if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &event) < 0)
+	if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &event) < 0) {
+		LOG << "epoll_mod error";
 		return -1;
+	}
 	return 0;
 }
 
-int Epoll::epoll_del(sp_channel channel, int events) {
+int Epoll::epoll_del(sp_channel channel, uint32_t events) {
 	int fd = channel->fd();
 	struct epoll_event event;
 	event.data.ptr = static_cast<void*>(channel.get());
@@ -88,16 +91,16 @@ std::vector<std::shared_ptr<Channel>> Epoll::handle_event(int num, int listenfd)
 			//task.args = nullptr;
 		}
 		else {
-			//LOG << "This channel not valid";
+			LOG << "This channel not valid";
 		}
 	}
 	return ret;
 }
 
 void Epoll::add_timer(sp_channel channel, size_t timeout) {
-	//std::shared_ptr<HttpData> tmp = std::shared_ptr<HttpData>(channel->fd());
-	//if (tmp)
-		//timer_.add_node(tmp, timeout);
-	//else
-		//LOG << "the add node is error";
+	std::shared_ptr<HttpData> tmp(new HttpData(channel->fd()));
+	if (tmp)
+		timer_.add_node(tmp, timeout);
+	else
+		LOG << "the add node is error";
 }

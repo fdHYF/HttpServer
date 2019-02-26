@@ -18,9 +18,9 @@ public:
 
 	Epoll();
 	~Epoll() {};
-	int epoll_add(sp_channel channel, size_t timeout, int events);	//Ìí¼ÓĞÂµÄÃèÊö·û
-	int epoll_mod(sp_channel channel, size_t timeout, int events);	//ĞŞ¸ÄÃèÊö·û
-	int epoll_del(sp_channel channel, int events);					//É¾³ıÃèÊö
+	int epoll_add(sp_channel channel, size_t timeout, uint32_t events);	//Ìí¼ÓĞÂµÄÃèÊö·û
+	int epoll_mod(sp_channel channel, size_t timeout, uint32_t events);	//ĞŞ¸ÄÃèÊö·û
+	int epoll_del(sp_channel channel, uint32_t events);					//É¾³ıÃèÊö
 
 	int epoll();
 	void add_timer(sp_channel, size_t timeout);

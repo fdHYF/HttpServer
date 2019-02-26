@@ -14,7 +14,6 @@ extern const int TIME_WAIT;
 int main() {
 	int port = 8080;
 	handle_for_sigpipe();
-
 	//初始化套接字，开始监听
 	int listenfd = socket_bind_listen(port);
 	//将监听套接字设置为非阻塞
@@ -42,6 +41,5 @@ int main() {
 			pool.append(&task);
 		}
 	}
-	printf("hello world!\n");
 	return 0;
 }

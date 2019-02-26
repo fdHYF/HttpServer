@@ -9,9 +9,6 @@ Channel::Channel(int fd) :
 	events_(0)
 {}
 
-void Channel::update() {
-
-}
 
 void Channel::handleEvent(void*) {
 	if (events_ & EPOLLERR) {

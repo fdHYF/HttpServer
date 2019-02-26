@@ -1,9 +1,7 @@
 #pragma once
 #include <pthread.h>
-//#include <memory>
 #include <functional>
 #include <string>
-//#include "Condition.h"
 
 
 class Thread {

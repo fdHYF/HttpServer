@@ -12,7 +12,6 @@ const int MAX_REQUEST_NUM = 65535;
 
 //线程池任务类
 struct RequestTask {
-	//void(*func)(void*);
 	std::function<void(void*)> func;
 	void* args;
 };
