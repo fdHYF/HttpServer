@@ -12,8 +12,8 @@ const int MAX_REQUEST_NUM = 65535;
 
 //线程池任务类
 struct RequestTask {
-	std::function<void(void*)> func;
-	void* args;
+	std::function<void()> func;
+	//void* args;
 };
 
 class ThreadPool {

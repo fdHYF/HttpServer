@@ -1,10 +1,8 @@
 #include "Server.h"
 #include "logging/Log.h"
-#include "Channel.h"
 #include "Timer.h"
 #include "Request.h"
 #include "Epoll.h"
-#include "ThreadPool.h"
 #include <string>
 #include <cstdio>
 #include <cstdlib>
@@ -22,24 +20,13 @@ int main() {
 	}
 
 	std::shared_ptr<Epoll> epoller = std::make_shared<Epoll>();
-	HttpData client_data(listenfd);
-	std::shared_ptr<Channel> channel = client_data.get_channel();
-	assert(channel);
-	epoller->epoll_add(channel, TIME_WAIT, EPOLLIN | EPOLLET);
-	//创建线程池,采用默认值
-	static ThreadPool pool;
-	std::vector<std::shared_ptr<Channel>> active_channel;
+	sp_httpdata client_data = std::make_shared<HttpData>(listenfd);
+	epoller->epoll_add(client_data, TIME_WAIT, EPOLLIN | EPOLLET);
 	while (true) {
-		active_channel.clear();
 		int num = epoller->epoll();
 		//assert(num > 0);
-		active_channel = epoller->handle_event(num, listenfd);
-		for (auto &tmp : active_channel) {
-			RequestTask task;
-			task.func = std::bind(&Channel::handleEvent, tmp, std::placeholders::_1);
-			task.args = nullptr;
-			pool.append(&task);
-		}
+		epoller->handle_expired();
+		epoller->handle_event(num, listenfd);
 	}
 	return 0;
 }

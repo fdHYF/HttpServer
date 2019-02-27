@@ -1,7 +1,7 @@
 #include "Timer.h"
 #include <sys/time.h>
 
-TimerNode::TimerNode(const std::shared_ptr<HttpData>& client_data,
+TimerNode::TimerNode(std::shared_ptr<HttpData> client_data,
 	const size_t& expired_time) :
 	deleted_(false),
 	client_data_(client_data)
@@ -44,8 +44,9 @@ bool TimerNode::isValid() {
 }
 
 void Timer::add_node(std::shared_ptr<HttpData> client_data, size_t timeout){
-	sp_node new_node(new TimerNode(client_data, timeout));
+	sp_node new_node = std::make_shared<TimerNode>(client_data, timeout);
 	TimerQueue.push(new_node);
+	//client_data->link_timer(new_node);
 }
 
 void Timer::handle_expired() {

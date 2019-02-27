@@ -1,6 +1,6 @@
 #pragma once
 #include <sys/epoll.h>
-#include "Channel.h"
+//#include "Channel.h"
 #include "Request.h"
 #include "Timer.h"
 #include <vector>
@@ -9,27 +9,28 @@
 
 const int MAXEVENTS = 1024;
 const int TIME_WAIT = 10000;
-static const int maxFds_ = 100000;
+static const int maxfds = 10000;
+using sp_httpdata = std::shared_ptr<HttpData>;
 
 class Epoll {
 public:
-	using sp_channel = std::shared_ptr<Channel>;
-
 	Epoll();
 	~Epoll() {};
-	int epoll_add(sp_channel channel, size_t timeout, uint32_t events);	//Ìí¼ÓĞÂµÄÃèÊö·û
-	int epoll_mod(sp_channel channel, size_t timeout, uint32_t events);	//ĞŞ¸ÄÃèÊö·û
-	int epoll_del(sp_channel channel, uint32_t events);					//É¾³ıÃèÊö
+
+	int epoll_add(sp_httpdata data, int timeout, int events);
+	int epoll_mod(sp_httpdata data, int timeout, int events);
+	int epoll_del(sp_httpdata data, int events);
 
 	int epoll();
-	void add_timer(sp_channel, size_t timeout);
-	std::vector<sp_channel> handle_event(int num, int listenfd);
-
-	int getEpollFd() { return epollfd_; }
-	Timer get_timer() { return timer_; }
+	void handle_event(int fd, int num);
+	void handle_expired() { timer_.handle_expired(); }
+	int get_epollfd() { return epollfd_; }
+	void add_timer(sp_httpdata data, int timeout) { 
+		timer_.add_node(data, timeout); 
+	}
 private:
 	int epollfd_;
 	std::vector<struct epoll_event> events_;
+	std::vector<sp_httpdata> datas_{ maxfds };
 	Timer timer_;
-	std::vector<sp_channel> channels_{ maxFds_ };
 };

@@ -5,10 +5,9 @@
 #include <vector>
 #include "lib/Mutex.h"
 class HttpData;
-
 class TimerNode {
 public:
-	TimerNode(const std::shared_ptr<HttpData>& client_data, 
+	TimerNode(std::shared_ptr<HttpData> client_data, 
 		const size_t& expiredtime);
 	~TimerNode() {}
 	TimerNode(const TimerNode& rhs);

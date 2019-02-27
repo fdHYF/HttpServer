@@ -56,6 +56,6 @@ void ThreadPool::run() {
 			requests.pop_front();
 		}
 		assert(req != nullptr);
-		req->func(req->args);
+		req->func();
 	}
 }

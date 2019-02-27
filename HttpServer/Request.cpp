@@ -56,16 +56,13 @@ std::string MimeType::getMime(const std::string& str) {
 
 HttpData::HttpData(int connfd) :
 	fd_(connfd),
-	channel_(new Channel(connfd)),
 	method_(GET),
 	version_(HTTP_11),
 	keepAlive_(false),
 	now_index_(0),
 	read_index_(0)
 {	
-	channel_->setReadCallBack(std::bind(&HttpData::handleRead, this));
-	channel_->setWriteCallBack(std::bind(&HttpData::handleWrite, this));
-	//channel_->setErrorCallBack(std::bind(&HttpData::handleError, this));
+	LOG << "Init one HttpData";
 }
 
 //从状态机，用于解析出一行
@@ -243,11 +240,10 @@ ssize_t HttpData::writeToFd() {
 }
 
 void HttpData::handleWrite() {
-	uint32_t& event = channel_->events();
 	if (writeToFd() < 0) {
-		event = 0;
+		LOG << "writeToFd error";
 	}
-	event |= EPOLLOUT;
+	
 }
 
 bool HttpData::do_request() {

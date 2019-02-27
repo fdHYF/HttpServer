@@ -48,11 +48,15 @@ public:
 	HttpData(int connfd);
 	~HttpData() { close(fd_); }
 
-	std::shared_ptr<Channel> get_channel() { return channel_; }
-	std::shared_ptr<TimerNode> get_node() { return timer_.lock(); }
+	std::shared_ptr<TimerNode> get_node() { return timer_; }
+	//void link_timer(std::shared_ptr<TimerNode> timer) { timer_ = timer; }
+	int fd() { return fd_; }
+
+	void handleRead();
+	void handleWrite();
+	void handleError(int fd, int err_num, std::string msg);
 private:
 	int fd_;
-	std::shared_ptr<Channel> channel_;
 	std::string ReadBuffer;
 	std::string WriteBuffer;
 
@@ -63,18 +67,9 @@ private:
 	std::map<std::string, std::string> headers_;
 
 	bool keepAlive_;
-	std::weak_ptr<TimerNode> timer_;
+	std::shared_ptr<TimerNode> timer_;
 	int now_index_;			//读缓冲区当前正在分析的字节
 	int read_index_;		//读缓冲区中客户数据的下一个字节
-
-	void handleRead();
-	void handleWrite();
-	void handleconn();
-	void handleError(int fd, int err_num, std::string msg);
-
-	void link_timer(const std::shared_ptr<TimerNode>& new_timer) {
-		timer_ = new_timer;
-	}
 
 	//从状态机，解析一行
 	LINE_STATUS parse_line(std::string& str);
