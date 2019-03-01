@@ -1,6 +1,5 @@
 #pragma once
 #include <sys/epoll.h>
-//#include "Channel.h"
 #include "Request.h"
 #include "Timer.h"
 #include <vector>
@@ -28,6 +27,7 @@ public:
 	void add_timer(sp_httpdata data, int timeout) { 
 		timer_.add_node(data, timeout); 
 	}
+    void thread_func(sp_httpdata data, int event);
 private:
 	int epollfd_;
 	std::vector<struct epoll_event> events_;
