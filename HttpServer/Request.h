@@ -7,28 +7,27 @@
 #include <cstdio>
 #include "Timer.h"
 
-#include "Channel.h"
-const int FILENAME_LIN = 200;		//×î´óÎÄ¼şÃû³¤¶È
+const int FILENAME_LIN = 200;		//æœ€å¤§æ–‡ä»¶åé•¿åº¦
 const int READ_BUFFER_SIZE = 1024;
 const int WRITE_BUFFER_SIZE = 2048;
 
-//HTTP·½·¨½ö½öÖ§³ÖGET
+//HTTPæ–¹æ³•ä»…ä»…æ”¯æŒGET
 enum METHOD { GET = 0, POST, HEAD, TRACE, PUT, DELETE, CONNECT, PATCH, OPTIONS };
-//Ö÷×´Ì¬»ú×´Ì¬£º·ÖÎöÇëÇóĞĞ¡¢·ÖÎöÍ·²¿×Ö¶Î
+//ä¸»çŠ¶æ€æœºçŠ¶æ€ï¼šåˆ†æè¯·æ±‚è¡Œã€åˆ†æå¤´éƒ¨å­—æ®µ
 enum CHECK_STATE { CHECK_STATE_REQUESTLINE = 0, CHECK_STATE_HEADER };
-//´Ó×´Ì¬»úµÄ×´Ì¬£¬¼´ĞĞµÄ¶ÁÈ¡×´Ì¬£º¶ÁÈ¡µ½Ò»¸öÍêÕûµÄĞĞ¡¢ĞĞ³ö´íºÍĞĞÊı¾İÉĞ²»ÍêÕû
+//ä»çŠ¶æ€æœºçš„çŠ¶æ€ï¼Œå³è¡Œçš„è¯»å–çŠ¶æ€ï¼šè¯»å–åˆ°ä¸€ä¸ªå®Œæ•´çš„è¡Œã€è¡Œå‡ºé”™å’Œè¡Œæ•°æ®å°šä¸å®Œæ•´
 enum LINE_STATUS { LINE_OK, LINE_BAD, LINE_OPEN };
 enum HTTP_CODE {
 	NO_REQUEST, GET_REQUEST, BAD_REQUEST, FORBIDDEN_REQUEST,
 	INTERNAL_ERROR, CLOSED_CONNECTION
 };
 /**
- * NO_REQUEST:ÇëÇó²»ÍêÕû
- * GET_REQUEST:µÃµ½Ò»¸öÍêÕûµÄ¿Í»§ÇëÇó
- * BAD_REQUEST:ÇëÇóÓï·¨´íÎó
- * FORBIDDEN_REQUEST:¶Ô×ÊÔ´µÄ·ÃÎÊÈ¨ÏŞ²»×ã
- * INTERNAL_ERROR:·şÎñÆ÷ÄÚ²¿´íÎó
- * CLOSED_CONNECTION:¿Í»§¹Ø±ÕÁ¬½Ó
+ * NO_REQUEST:è¯·æ±‚ä¸å®Œæ•´
+ * GET_REQUEST:å¾—åˆ°ä¸€ä¸ªå®Œæ•´çš„å®¢æˆ·è¯·æ±‚
+ * BAD_REQUEST:è¯·æ±‚è¯­æ³•é”™è¯¯
+ * FORBIDDEN_REQUEST:å¯¹èµ„æºçš„è®¿é—®æƒé™ä¸è¶³
+ * INTERNAL_ERROR:æœåŠ¡å™¨å†…éƒ¨é”™è¯¯
+ * CLOSED_CONNECTION:å®¢æˆ·å…³é—­è¿æ¥
  *
  */
 enum HTTP_VERSION { HTTP_10 = 1, HTTP_11 };
@@ -51,7 +50,7 @@ public:
 	std::shared_ptr<TimerNode> get_node() { return timer_; }
 	//void link_timer(std::shared_ptr<TimerNode> timer) { timer_ = timer; }
 	int fd() { return fd_; }
-
+    bool alive() const { return keepAlive_; }
 	void handleRead();
 	void handleWrite();
 	void handleError(int fd, int err_num, std::string msg);
@@ -68,12 +67,12 @@ private:
 
 	bool keepAlive_;
 	std::shared_ptr<TimerNode> timer_;
-	int now_index_;			//¶Á»º³åÇøµ±Ç°ÕıÔÚ·ÖÎöµÄ×Ö½Ú
-	int read_index_;		//¶Á»º³åÇøÖĞ¿Í»§Êı¾İµÄÏÂÒ»¸ö×Ö½Ú
+	int now_index_;			//è¯»ç¼“å†²åŒºå½“å‰æ­£åœ¨åˆ†æçš„å­—èŠ‚
+	int read_index_;		//è¯»ç¼“å†²åŒºä¸­å®¢æˆ·æ•°æ®çš„ä¸‹ä¸€ä¸ªå­—èŠ‚
 
-	//´Ó×´Ì¬»ú£¬½âÎöÒ»ĞĞ
+	//ä»çŠ¶æ€æœºï¼Œè§£æä¸€è¡Œ
 	LINE_STATUS parse_line(std::string& str);
-	//·ÖÎöÇëÇóĞĞ
+	//åˆ†æè¯·æ±‚è¡Œ
 	HTTP_CODE parse_request_line(std::string& request_line);
 	HTTP_CODE parse_headers(std::string& header);
 	HTTP_CODE parse_content(std::string& content);
