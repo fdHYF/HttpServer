@@ -1,7 +1,7 @@
 #include "ThreadPool.h"
 #include <exception>
 #include <cassert>
-
+#include <iostream>
 ThreadPool::ThreadPool(const int& thread_number, const int& request_number) :
 	thread_number_(thread_number),
 	request_number_(request_number),
@@ -11,7 +11,7 @@ ThreadPool::ThreadPool(const int& thread_number, const int& request_number) :
 {
 	if (thread_number_ < 0 || thread_number_ > MAX_THREAD_NUM ||
 		request_number < 0 || request_number > MAX_REQUEST_NUM) {
-		//Èç¹ûÏß³Ì³ØÏß³ÌÊıÁ¿ºÍÇëÇóÊıÁ¿²»ºÏ¹æ·¶²ÉÓÃÄ¬ÈÏÖµ
+		//å¦‚æœçº¿ç¨‹æ± çº¿ç¨‹æ•°é‡å’Œè¯·æ±‚æ•°é‡ä¸åˆè§„èŒƒé‡‡ç”¨é»˜è®¤å€¼
 		thread_number_ = 4;
 		request_number_ = 10000;
 	}
@@ -33,29 +33,30 @@ void* ThreadPool::worker(void* arg) {
 	return nullptr;
 }
 
-void ThreadPool::append(RequestTask* request) {
+void ThreadPool::append(RequestTask request) {
 	//MutexLockGuard lock(mutex_);
 	//while (request_number_ > MAX_REQUEST_NUM)
 	//	cond_.wait();
-	//ÒÔÉÏÈç¹ûrequest_number_ > MAX_REQUEST_NUM»áÔì³ÉËÀËø
+	//ä»¥ä¸Šå¦‚æœrequest_number_ > MAX_REQUEST_NUMä¼šé€ æˆæ­»é”
 	while (request_number_ > MAX_REQUEST_NUM) {
 		cond_.wait();
 	}
 	MutexLockGuard lock(mutex_);
 	requests.push_back(request);
+    	cond_.notifyAll();
 }
 
 void ThreadPool::run() {
+    stopped_ = false;
 	while (!stopped_) {
-		RequestTask* req = nullptr;
-		{
-			while (requests.empty())
-				cond_.wait();
+        RequestTask req;
+		if (requests.empty())
+			continue;
+        	{
 			MutexLockGuard lock(mutex_);
 			req = requests.front();
 			requests.pop_front();
 		}
-		assert(req != nullptr);
-		req->func();
+        	(req.func)(req.data, req.event);
 	}
 }
