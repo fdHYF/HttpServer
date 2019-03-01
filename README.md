@@ -10,7 +10,7 @@
  - 压力测试： webbench-1.5
 
 # 用法
- **git clone https://github.com/fdHYF/HttpServer.git**  
- **cd HttpServer/HttpServer**  
- **make**  
- **./WangTian**
+ `git clone https://github.com/fdHYF/HttpServer.git`  
+ `cd HttpServer/HttpServer`  
+ `make`  
+ `./WangTian`
