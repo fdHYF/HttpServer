@@ -85,26 +85,25 @@ void Epoll::handle_event(int num, int listenfd) {
 				continue;
 			}
 			sp_httpdata tmp = std::make_shared<HttpData>(accept_fd);
-		    epoll_add(tmp, TIME_WAIT, (EPOLLIN | EPOLLET));
+		    	epoll_add(tmp, TIME_WAIT, (EPOLLIN | EPOLLET));
 		}
 		else {
 			//有事件发生的描述符是连接描述符
 			//排除错误事件
 			if ((events_[fd].events & EPOLLERR) || (events_[fd].events & EPOLLHUP)) {
 				epoll_del(data, events_[fd].events);
-                LOG << "close fd";
-			    close(fd);
-				continue;
+                		LOG << "close fd";
+			 	close(fd);
+					continue;
 			}
 			RequestTask task;
-			if (events_[i].events & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
-            {
-               // thread_func(data, events_[i].events);
-                task.func = std::bind(&Epoll::thread_func, this, std::placeholders::_1, std::placeholders::_2);
-                task.data = data;
-                task.event = events_[i].events;
-                pool.append(task);
-            }
+			if (events_[i].events & (EPOLLIN | EPOLLPRI | EPOLLRDHUP) {
+               			// thread_func(data, events_[i].events);
+                		task.func = std::bind(&Epoll::thread_func, this, std::placeholders::_1, std::placeholders::_2);
+                		task.data = data;
+                		task.event = events_[i].events;
+                		pool.append(task);
+        		}
 		}
 	}
 }
