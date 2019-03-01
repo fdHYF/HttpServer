@@ -7,18 +7,18 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
-
+#include <iostream>
+#include <sys/stat.h>
 extern const int TIME_WAIT;
 int main() {
 	int port = 8080;
 	handle_for_sigpipe();
-	//³õÊ¼»¯Ì×½Ó×Ö£¬¿ªÊ¼¼àÌı
+	//åˆå§‹åŒ–å¥—æ¥å­—ï¼Œå¼€å§‹ç›‘å¬
 	int listenfd = socket_bind_listen(port);
-	//½«¼àÌıÌ×½Ó×ÖÉèÖÃÎª·Ç×èÈû
+	//å°†ç›‘å¬å¥—æ¥å­—è®¾ç½®ä¸ºéé˜»å¡
 	if (set_socket_nonblocking(listenfd) != 0) {
 		perror("set socket nonblocking failed");
 	}
-
 	std::shared_ptr<Epoll> epoller = std::make_shared<Epoll>();
 	sp_httpdata client_data = std::make_shared<HttpData>(listenfd);
 	epoller->epoll_add(client_data, TIME_WAIT, EPOLLIN | EPOLLET);
