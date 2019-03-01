@@ -1,5 +1,4 @@
 #pragma once
-#include "Channel.h"
 #include <memory>
 #include <sys/socket.h>
 #include <fcntl.h>
@@ -29,7 +28,7 @@ int socket_bind_listen(int port) {
 	int optval = 1;
 	if (setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
 		return -1;
-	//设置服务器IP和port，与listenfd进行绑定
+	//璁剧疆鏈嶅姟鍣↖P鍜宲ort锛屼笌listenfd杩涜缁戝畾
 	struct sockaddr_in server_addr;
 	bzero((char*)&server_addr, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
@@ -48,8 +47,8 @@ int socket_bind_listen(int port) {
 
 void shut_down(int sockfd, int how) {
 	shut_down(sockfd, how);
-	//how:SHUT_RD,关闭读端
-	//how:SHUT_WR,关闭写端
+	//how:SHUT_RD,鍏抽棴璇荤
+	//how:SHUT_WR,鍏抽棴鍐欑
 }
 
 void handle_for_sigpipe() {
