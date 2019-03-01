@@ -8,9 +8,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>
-
+#include <iostream>
 extern int set_socket_nonblocking(int sockfd);
-//´´½¨Ïß³Ì³Ø,²ÉÓÃÄ¬ÈÏÖµ
+//åˆ›å»ºçº¿ç¨‹æ± ,é‡‡ç”¨é»˜è®¤å€¼
 static ThreadPool pool;
 
 Epoll::Epoll() :
@@ -66,8 +66,8 @@ int Epoll::epoll() {
 	return num;
 }
 
-void Epoll::handle_event(int listenfd, int num) {
-	for (int i = 0; i < num; ++i) {
+void Epoll::handle_event(int num, int listenfd) {
+    for (int i = 0; i < num; ++i) {
 		int fd = events_[i].data.fd;
 		sp_httpdata data = datas_[fd];
 		if (fd == listenfd) {
@@ -85,23 +85,35 @@ void Epoll::handle_event(int listenfd, int num) {
 				continue;
 			}
 			sp_httpdata tmp = std::make_shared<HttpData>(accept_fd);
-			epoll_add(tmp, TIME_WAIT, (EPOLLIN | EPOLLET | EPOLLONESHOT));
+		    epoll_add(tmp, TIME_WAIT, (EPOLLIN | EPOLLET));
 		}
 		else {
-			//ÓĞÊÂ¼ş·¢ÉúµÄÃèÊö·ûÊÇÁ¬½ÓÃèÊö·û
-			//ÅÅ³ı´íÎóÊÂ¼ş
-			if ((events_[fd].events & EPOLLERR) || (events_[fd].events & EPOLLHUP) ||
-				(!(events_[fd].events & EPOLLIN))) {
-				//epoll_del(data, events_[fd].events);
-				close(fd);
+			//æœ‰äº‹ä»¶å‘ç”Ÿçš„æè¿°ç¬¦æ˜¯è¿æ¥æè¿°ç¬¦
+			//æ’é™¤é”™è¯¯äº‹ä»¶
+			if ((events_[fd].events & EPOLLERR) || (events_[fd].events & EPOLLHUP)) {
+				epoll_del(data, events_[fd].events);
+                LOG << "close fd";
+			    close(fd);
 				continue;
 			}
 			RequestTask task;
 			if (events_[i].events & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
-				task.func = std::bind(&HttpData::handleRead, data);
-			else if (events_[i].events & EPOLLOUT)
-				task.func = std::bind(&HttpData::handleWrite, data);
-			pool.append(&task);
+            {
+               // thread_func(data, events_[i].events);
+                task.func = std::bind(&Epoll::thread_func, this, std::placeholders::_1, std::placeholders::_2);
+                task.data = data;
+                task.event = events_[i].events;
+                pool.append(task);
+            }
 		}
 	}
+}
+void Epoll::thread_func(sp_httpdata data, int event) {
+    data->handleRead();
+    if(data->alive() == false) {
+        epoll_del(data, event);
+        close(data->fd());
+    }
+    else
+        epoll_mod(data, TIME_WAIT, EPOLLIN);
 }
