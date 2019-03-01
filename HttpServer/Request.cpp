@@ -8,9 +8,9 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include "logging/Log.h"
+#include <iostream>
 
-
-//¾²Ì¬³ÉÔ±³õÊ¼»¯
+//é™æ€æˆå‘˜åˆå§‹åŒ–
 pthread_once_t MimeType::once_control = PTHREAD_ONCE_INIT;
 std::map<std::string, std::string> MimeType::mime;
 
@@ -61,31 +61,33 @@ HttpData::HttpData(int connfd) :
 	keepAlive_(false),
 	now_index_(0),
 	read_index_(0)
-{	
+{
 	LOG << "Init one HttpData";
 }
 
-//´Ó×´Ì¬»ú£¬ÓÃÓÚ½âÎö³öÒ»ĞĞ
+//ä»çŠ¶æ€æœºï¼Œç”¨äºè§£æå‡ºä¸€è¡Œ
 LINE_STATUS HttpData::parse_line(std::string& str) {
 	char tmp;
 	int start = now_index_;
-	for (; now_index_ < read_index_; ++now_index_) {
+	for (; now_index_ < read_index_ && now_index_ < (int)ReadBuffer.size(); ++now_index_) {
 		tmp = ReadBuffer[now_index_];
-		//Èç¹ûµ±Ç°×Ö½ÚÊÇ'\r',ËµÃ÷ÓĞ¿ÉÄÜ¶ÁÈ¡µ½Ò»¸öÍêÕûµÄĞĞ
+		//å¦‚æœå½“å‰å­—èŠ‚æ˜¯'\r',è¯´æ˜æœ‰å¯èƒ½è¯»å–åˆ°ä¸€ä¸ªå®Œæ•´çš„è¡Œ
 		if (tmp == '\r') {
 			if (now_index_ + 1 == read_index_)
 				return LINE_OPEN;
 			else if (ReadBuffer[now_index_ + 1] == '\n') {
-				str = ReadBuffer.substr(start, now_index_);
-				ReadBuffer[now_index_++] = '\0';
+				//str = ReadBuffer.substr(start, now_index_ - start);
+				str = std::string(ReadBuffer.cbegin() + start, ReadBuffer.cbegin() + now_index_);
+                ReadBuffer[now_index_++] = '\0';
 				ReadBuffer[now_index_++] = '\0';
 				return LINE_OK;
 			}
 		}
 		else if (tmp == '\n') {
 			if (ReadBuffer[now_index_ - 1] == '\r') {
-				str = ReadBuffer.substr(start, now_index_ - 1);
-				ReadBuffer[now_index_ - 1] = '\0';
+				//str = ReadBuffer.substr(start, now_index_ - start - 1);
+				str = std::string(ReadBuffer.cbegin() + start,  ReadBuffer.cbegin() + now_index_ - 1);
+                ReadBuffer[now_index_ - 1] = '\0';
 				ReadBuffer[now_index_++] = '\0';
 				return LINE_OK;
 			}
@@ -99,33 +101,34 @@ LINE_STATUS HttpData::parse_line(std::string& str) {
 }
 
 
-//·ÖÎöHTTP±¨ÎÄÇëÇóĞĞ
+//åˆ†æHTTPæŠ¥æ–‡è¯·æ±‚è¡Œ
 HTTP_CODE HttpData::parse_request_line(std::string& request_line) {
 	if (request_line.empty())
 		return NO_REQUEST;
-	//ÇëÇó·½·¨½âÎö
+	//è¯·æ±‚æ–¹æ³•è§£æ
 	size_t pos = request_line.find(" ");
-	std::string strMethod = request_line.substr(0, pos);
-	if (strMethod.compare("GET") == 0)
+	//std::string strMethod = request_line.substr(0, pos);
+    std::string strMethod = std::string(request_line.cbegin(), request_line.cbegin() + pos);
+    if (strMethod.compare("GET") == 0)
 		method_ = GET;
 	else
 		return BAD_REQUEST;
-	//Â·¾¶ÃûÒÔ¼°ÎÄ¼şÃû½âÎö
+	//è·¯å¾„åä»¥åŠæ–‡ä»¶åè§£æ
 	size_t index_left = request_line.find("/", pos);
 	pos = index_left;
 	pos = request_line.find(" ", pos);
-	path_ = request_line.substr(index_left, pos);
-
-	//Ğ­Òé°æ±¾
+	//path_ = request_line.substr(index_left, pos - index_left);
+    path_ = std::string(request_line.cbegin() + index_left, request_line.cbegin() + pos);
+	//åè®®ç‰ˆæœ¬
 	if (request_line.find("HTTP/1.1", pos) > 0)
 		version_ = HTTP_11;
 	else
 		return BAD_REQUEST;
-	//µÃµ½ÇëÇóĞĞµÄÍêÕû½âÎö
+	//å¾—åˆ°è¯·æ±‚è¡Œçš„å®Œæ•´è§£æ
 	return GET_REQUEST;
 }
 
-//·ÖÎöÍ·²¿×Ö¶Î
+//åˆ†æå¤´éƒ¨å­—æ®µ
 HTTP_CODE HttpData::parse_headers(std::string& header) {
 	std::string key;
 	std::string value;
@@ -137,38 +140,48 @@ HTTP_CODE HttpData::parse_headers(std::string& header) {
 	}
 	else {
 		size_t pos = header.find(":");
-		key = header.substr(0, pos);
-		pos += 2;
-		value = header.substr(pos, header.size());
-		headers_[key] = value;
+   		key = header.substr(0, pos);
+		//key = std::string(header.cbegin(), header.cbegin() + pos);
+        pos += 2;
+		value = header.substr(pos, header.size() - pos - 2);
+		//value = std::string(header.cbegin() + pos, header.cbegin() + header.size() - 2);
+        headers_[key] = value;
 	}
 	return GET_REQUEST;
 }
 
-//ÒòÎª´Ë´¦Ö»Ö§³ÖGET·½·¨£¬GET·½·¨¶ÔÓ¦µÄÊµÌåÌåÎª¿Õ£¬¹ÊÃ»ÓĞÊµÌåÌåµÄ½âÎö
+//å› ä¸ºæ­¤å¤„åªæ”¯æŒGETæ–¹æ³•ï¼ŒGETæ–¹æ³•å¯¹åº”çš„å®ä½“ä½“ä¸ºç©ºï¼Œæ•…æ²¡æœ‰å®ä½“ä½“çš„è§£æ
 HTTP_CODE HttpData::parse_content(std::string& content) {
 	return GET_REQUEST;
 }
 
-//·µ»Ø¶ÁÈ¡×Ö½Ú×ÜÊı
+//è¿”å›è¯»å–å­—èŠ‚æ€»æ•°
 ssize_t HttpData::readFromFd() {
 	ssize_t nread = 0;
 	ssize_t readsum = 0;
 	while (true) {
 		char buffer[READ_BUFFER_SIZE];
 		if ((nread = read(fd_, buffer, READ_BUFFER_SIZE)) < 0) {
+           // perror("read:");
 			if (errno == EINTR)
 				continue;
-			else if (errno == EAGAIN)
-				return readsum;
+			else if (errno == EAGAIN){
+                if(readsum != 0)
+                    return readsum;
+                continue;
+            }
 			else
 				return -1;
 		}
-		else if (nread == 0)
-			break;
+        else if (nread == 0) {
+            //è¯·æ±‚å“åº”ï¼Œä½†æ˜¯æ²¡æœ‰è¯»å–åˆ°æ•°æ®ï¼ŒæŒ‰å¯¹ç«¯å…³é—­å¤„ç†
+            return 0;
+        }
 		readsum += nread;
 		read_index_ += (int)nread;
 		ReadBuffer += std::string(buffer, buffer + nread);
+        //std::cout << "ReadBuffer" << " size:" << ReadBuffer.size() << " capacity:" << ReadBuffer.capacity() << std::endl;
+        ReadBuffer.shrink_to_fit();
 	}
 	return readsum;
 }
@@ -179,16 +192,22 @@ void HttpData::handleRead() {
 	HTTP_CODE http_code = GET_REQUEST;
 	int readsum = (int)readFromFd();
 	if (readsum < 0) {
+        LOG << "Read Error";
 		handleError(fd_, 400, "Bad Request");
+        return;
 	}
+    else if(readsum == 0) {
+        //æœ‰è¯·æ±‚ä½†æ˜¯æ— æ³•è¯»åˆ°æ•°æ®ï¼Œå…¨éƒ¨æŒ‰å¯¹ç«¯å…³é—­å¤„ç†
+        return;
+    }
 	while (true) {
-		std::string str;
+        std::string str;
 		if ((line_state = parse_line(str)) == LINE_BAD) {
-			//HTTPÇëÇóÓï·¨´íÎó
+			//HTTPè¯·æ±‚è¯­æ³•é”™è¯¯
 			handleError(fd_, 400, "Bad Request");
 		}
 		else if (line_state == LINE_OK) {
-			//µÃµ½Ò»¸öÍêÕûµÄĞĞ
+			//å¾—åˆ°ä¸€ä¸ªå®Œæ•´çš„è¡Œ
 			switch (check_state)
 			{
 			case CHECK_STATE_REQUESTLINE:
@@ -220,30 +239,35 @@ ssize_t HttpData::writeToFd() {
 	ssize_t nwrite = 0;
 	ssize_t writesum = 0;
 	const char* tmp = WriteBuffer.c_str();
-	WriteBuffer.clear();
-	while (true) {
-		size_t len = strlen(tmp);
-		if ((nwrite = write(fd_, tmp, len) < 0)) {
-			if (errno == EINTR)
-				continue;
-			else if (errno == EAGAIN)
-				return writesum;
+    	size_t len = WriteBuffer.size();
+	while (len > 0) {
+		if ((nwrite = write(fd_, tmp, len)) <= 0) {
+            	//perror("write error");
+            	if (errno == EINTR) {
+                	continue;
+            	}
+		else if (errno == EAGAIN)
+			continue;
 			else
 				return -1;
 		}
-		else if (nwrite == 0)
-			break;
 		writesum += nwrite;
 		tmp += nwrite;
-	}
-	return writesum;
+       		len -= nwrite;
+    	}
+    if(writesum == static_cast<int>(WriteBuffer.size()))
+        WriteBuffer.clear();
+    else{
+        std::string tmp = std::string(WriteBuffer.cbegin() + writesum, WriteBuffer.cend());
+        WriteBuffer.swap(tmp);
+    }
+    return writesum;
 }
 
 void HttpData::handleWrite() {
 	if (writeToFd() < 0) {
 		LOG << "writeToFd error";
 	}
-	
 }
 
 bool HttpData::do_request() {
@@ -258,17 +282,26 @@ bool HttpData::do_request() {
 		keepAlive_ = false;
 		header += "Connection: close\r\n";
 	}
-	//È·¶¨ÎÄ¼şÀàĞÍ
+	//ç¡®å®šæ–‡ä»¶ç±»å‹
+    	if(path_.empty()) {
+        	WriteBuffer.clear();
+        	handleError(fd_, 404, "Not Found");
+        	return false;
+    	}
 	size_t pos = path_.find(".");
 	std::string file_type;
 	if (pos < 0)
 		file_type = MimeType::getMime("default");
-	else
-		file_type = MimeType::getMime(path_.substr(pos));
-
-	struct stat buf;
+	else{
+        	std::string tmp = std::string(path_.cbegin() + pos, path_.cend());
+		file_type = MimeType::getMime(/*path_.substr(pos)*/tmp);
+    	}
+    	struct stat buf;
 	if (stat(path_.c_str(), &buf) < 0) {
-		header.clear();
+        std::cout << path_ << std::endl;
+        perror("stat:");
+        std::cout << "path_size() " << path_.size() << std::endl;
+        header.clear();
 		handleError(fd_, 404, "Not Found");
 		return false;
 	}
@@ -278,7 +311,7 @@ bool HttpData::do_request() {
 	header += "Server: WangTian/1.0 (Ubuntu)\r\n";
 	header += "\r\n";
 	WriteBuffer += header;
-
+    	//writeToFd();
 	if (method_ == HEAD)
 		return true;
 	int file_fd = open(path_.c_str(), O_RDONLY, 0);
@@ -288,11 +321,11 @@ bool HttpData::do_request() {
 		return false;
 	}
 
-	//Ê¹ÓÃ´æ´¢Ó³ÉäIO¶ÁÈ¡ÎÄ¼ş
+	//ä½¿ç”¨å­˜å‚¨æ˜ å°„IOè¯»å–æ–‡ä»¶
 	void* address = mmap(nullptr, buf.st_size, PROT_READ, MAP_PRIVATE, file_fd, 0);
 	close(file_fd);
 	if (address == MAP_FAILED) {
-		//¹Ø±ÕÓ³Éä´æ´¢Çø
+		//å…³é—­æ˜ å°„å­˜å‚¨åŒº
 		munmap(address, buf.st_size);
 		WriteBuffer.clear();
 		handleError(fd_, 404, "Not Found");
@@ -300,15 +333,16 @@ bool HttpData::do_request() {
 	}
 	char* file_addr = static_cast<char*>(address);
 	WriteBuffer += std::string(file_addr, file_addr + buf.st_size);
+    	writeToFd();
 	munmap(address, buf.st_size);
 	return true;
 }
 
 void HttpData::handleError(int fd, int err_num, std::string msg) {
 	//char buffer[WRITE_BUFFER_SIZE];
-	//ÏìÓ¦Í·»º³åºÍÊı¾İ»º³å
+	//å“åº”å¤´ç¼“å†²å’Œæ•°æ®ç¼“å†²
 	std::string header, body;
-	body += "<html><title>°¥Ñ½~³ö´íÁË</title>";
+	body += "<html><title>å“å‘€~å‡ºé”™äº†</title>";
 	body += "<body bgcolor=\"ffffff\">";
 	body += std::to_string(err_num) + " " + msg;
 	body += "<hr><em> WangTian Web Server</em>\n</body></html>";
