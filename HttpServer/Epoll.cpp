@@ -97,7 +97,7 @@ void Epoll::handle_event(int num, int listenfd) {
 					continue;
 			}
 			RequestTask task;
-			if (events_[i].events & (EPOLLIN | EPOLLPRI | EPOLLRDHUP) {
+			if (events_[i].events & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)） {
                			// thread_func(data, events_[i].events);
                 		task.func = std::bind(&Epoll::thread_func, this, std::placeholders::_1, std::placeholders::_2);
                 		task.data = data;
