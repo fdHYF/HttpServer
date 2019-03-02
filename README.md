@@ -35,10 +35,10 @@ LOG实现学习了muduo网络库，相关类包括LogFile、LogWrite、LogStream
  - LogStream实现格式化输出，重载了<<运算符，并未使用标准库的std::cout
  - Log是对外接口的封装，加上每条日志的格式化信息
  # 测试
- 测试使用的机器是Ubuntu Server 18.04.1 LTS 64位 + 单核 + 2GB内存，公网带宽1Mbps.由于服务器是单核，测试时线程池仅开启一个线程。分别进行了wget请求
- 测试，firefox请求测试，以及webbench压力测试。
+ 测试使用的机器是Ubuntu Server 18.04.1 LTS 64位 + 单核 + 2GB内存，公网带宽1Mbps。条件有限，进行本地测试。由于服务器是单核，测试时线程池仅开启一个    线程。分别进行了wget请求测试，firefox请求测试，以及webbench压力测试。
  ### wget
- 
+ ![](https://github.com/fdHYF/HttpServer/blob/master/picture/wget.png)
  ### firefox
- 
+ ![](https://github.com/fdHYF/HttpServer/blob/master/picture/firefox.png)
  ### webbench
+ ![](https://github.com/fdHYF/HttpServer/blob/master/picture/webbench.png)
