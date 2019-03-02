@@ -4,7 +4,7 @@
 #include <iostream>
 ThreadPool::ThreadPool(const int& thread_number, const int& request_size) :
 	thread_number_(thread_number),
-	request_szie_(request_size),
+	request_size_(request_size),
 	request_number_(0),
 	stopped_(false),
 	mutex_(),
