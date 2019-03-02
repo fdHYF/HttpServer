@@ -12,7 +12,8 @@
 # 用法
  `git clone https://github.com/fdHYF/HttpServer.git`  
  `cd HttpServer/HttpServer`  
- `make`  
+ `cmake .`
+ `make`
  `./WangTian`
 
 #特点
