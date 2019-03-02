@@ -20,7 +20,7 @@ struct RequestTask {
 
 class ThreadPool {
 public:
-	explicit ThreadPool(const int& thread_number = 1, const int& request_number = 10000);
+	explicit ThreadPool(const int& thread_number = 1, const int& request_size = 10000);
 	~ThreadPool() { stopped_ = true; }
 	void append(RequestTask request);
 
@@ -29,6 +29,7 @@ private:
 	void run();
 private:
 	int thread_number_;
+	int request_size_;
 	int request_number_;
 	bool stopped_;
 	MutexLock mutex_;
