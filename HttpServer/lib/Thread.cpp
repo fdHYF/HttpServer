@@ -37,7 +37,7 @@ void Thread::start() {
 		started_ = false;
 	}
 	else {
-		std::cout << "Create thread success" << std::endl;
+		
 	}
 }
 
