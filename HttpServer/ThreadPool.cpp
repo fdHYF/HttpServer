@@ -2,18 +2,19 @@
 #include <exception>
 #include <cassert>
 #include <iostream>
-ThreadPool::ThreadPool(const int& thread_number, const int& request_number) :
+ThreadPool::ThreadPool(const int& thread_number, const int& request_size) :
 	thread_number_(thread_number),
-	request_number_(request_number),
+	request_szie_(request_size),
+	request_number_(0),
 	stopped_(false),
 	mutex_(),
 	cond_(mutex_)
 {
 	if (thread_number_ < 0 || thread_number_ > MAX_THREAD_NUM ||
-		request_number < 0 || request_number > MAX_REQUEST_NUM) {
+		request_size_ < 0 || request_size_ > MAX_REQUEST_NUM) {
 		//如果线程池线程数量和请求数量不合规范采用默认值
 		thread_number_ = 4;
-		request_number_ = 10000;
+		request_size_ = 10000;
 	}
 	std::vector<pthread_t> ini_thread(thread_number_);
 	threads = std::move(ini_thread);
@@ -43,6 +44,7 @@ void ThreadPool::append(RequestTask request) {
 	}
 	MutexLockGuard lock(mutex_);
 	requests.push_back(request);
+	++request_number_;
     	cond_.notifyAll();
 }
 
@@ -56,6 +58,7 @@ void ThreadPool::run() {
 			MutexLockGuard lock(mutex_);
 			req = requests.front();
 			requests.pop_front();
+			--request_number_;
 		}
     	(req.func)(req.data, req.event);
 	}
