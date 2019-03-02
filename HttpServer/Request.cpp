@@ -283,24 +283,24 @@ bool HttpData::do_request() {
 		header += "Connection: close\r\n";
 	}
 	//确定文件类型
-    	if(path_.empty()) {
-        	WriteBuffer.clear();
-        	handleError(fd_, 404, "Not Found");
-        	return false;
-    	}
+    if(path_.empty()) {
+       	WriteBuffer.clear();
+       	handleError(fd_, 404, "Not Found");
+       	return false;
+   	}
 	size_t pos = path_.find(".");
 	std::string file_type;
 	if (pos < 0)
 		file_type = MimeType::getMime("default");
 	else{
         	std::string tmp = std::string(path_.cbegin() + pos, path_.cend());
-		file_type = MimeType::getMime(/*path_.substr(pos)*/tmp);
-    	}
-    	struct stat buf;
+			file_type = MimeType::getMime(/*path_.substr(pos)*/tmp);
+    }
+    struct stat buf;
 	if (stat(path_.c_str(), &buf) < 0) {
-        std::cout << path_ << std::endl;
-        perror("stat:");
-        std::cout << "path_size() " << path_.size() << std::endl;
+        //std::cout << path_ << std::endl;
+        //perror("stat:");
+        //std::cout << "path_size() " << path_.size() << std::endl;
         header.clear();
 		handleError(fd_, 404, "Not Found");
 		return false;
