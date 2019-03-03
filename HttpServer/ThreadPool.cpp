@@ -52,9 +52,9 @@ void ThreadPool::run() {
     stopped_ = false;
 	while (!stopped_) {
        		RequestTask req;
-		if (requests.empty())
-			continue;
    		{
+			if (requests.empty())
+				cond_.wait();
 			MutexLockGuard lock(mutex_);
 			req = requests.front();
 			requests.pop_front();
