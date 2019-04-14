@@ -16,7 +16,7 @@
  `make`
  `./WangTian`
 
-#特点
+# 特点
  
  - 由priority_queue实现了小根堆的定时器，采用惰性删除方式
  - 支持HTTP长连接
